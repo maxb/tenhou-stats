@@ -7,9 +7,49 @@ import os
 import re
 import time
 
-from .models import TenhouGame
+from .models import TenhouGame, TenhouPlayer
+
+import TenhouDecoder
+
+def format_round(r):
+    base_round, honba, riibo = r.round
+    round_string = base_round + "局"
+    if honba:
+        round_string += " {}本場".format(honba)
+    return round_string
+
+AGARI_TYPE = {
+    'RON': 'ロン',
+    'TSUMO': 'ツモ',
+}
+def format_agari(agari, game):
+    a_type = AGARI_TYPE[agari.type]
+    a = "{} {}".format(game.players[agari.player].name, a_type)
+    if agari.type == 'RON':
+        a += " {}".format(game.players[agari.fromPlayer].name)
+    a += " {}点".format(agari.points)
+    if hasattr(agari, 'limit'):
+        a += " {}".format(agari.limit.upper())
+    a += " ("
+    if hasattr(agari, 'yaku'):
+        yaku = []
+        for name, han in agari.yaku:
+            if han == 0:
+                pass
+            elif name.endswith('dora'):
+                yaku.append("{} {}".format(name, han))
+            elif name in yaku:
+                yaku[yaku.index(name)] = "dabu" + name
+            else:
+                yaku.append(name)
+        a += ', '.join(yaku)
+    if hasattr(agari, 'yakuman'):
+        a += ', '.join(agari.yakuman)
+    a += ")"
+    return a
 
 def stats_home(request):
+    players = TenhouPlayer.objects.all().order_by('tenhou_name')
     games_by_day = []
     current_day = None
     games_current_day = None
@@ -22,6 +62,25 @@ def stats_home(request):
             games_current_day = []
             current_day = this_game_day
         games_current_day.append(game)
+        fname = "{}/{}.xml".format(settings.TENHOU_LOG_DIR, game.game_id)
+        gdata = TenhouDecoder.Game()
+        with open(fname, 'rb') as f:
+            gdata.decode(f)
+        game.rounds = []
+        for r in gdata.rounds:
+            round_string = format_round(r)
+            if len(r.agari) == 1:
+                extra = None
+                round_string += ": " + format_agari(r.agari[0], gdata)
+            elif len(r.agari) == 0:
+                extra = None
+                if r.ryuukyoku:
+                    round_string += ": 流局"
+                else:
+                    round_string += ": SOME KIND OF ABORTIVE DRAW?"
+            else:
+                extra = [format_agari(x, gdata) for x in r.agari]
+            game.rounds.append((round_string, extra))
     games_by_day.append([current_day, games_current_day])
     return render(request, 'stats_home.html', locals())
 
@@ -30,10 +89,18 @@ def api_new_game(request, game_id):
     m = GAME_ID_RE.match(game_id)
     if not m:
         return HttpResponseBadRequest('Incorrectly formatted ID')
+
     datehour, typeflags, lobby = m.groups()
-    xmlfile = "{}/{}.xml".format(settings.TENHOU_LOG_DIR, game_id)
-    if not os.path.exists(xmlfile):
+    fname = "{}/{}.xml".format(settings.TENHOU_LOG_DIR, game_id)
+    if not os.path.exists(fname):
         return HttpResponseBadRequest('File does not exist')
+
+    try:
+        TenhouGame.objects.get(game_id = game_id)
+        return HttpResponse('OK (already known)')
+    except TenhouGame.DoesNotExist:
+        pass
+
     when_tt = time.strptime(datehour, '%Y%m%d%H')
     when = datetime.datetime(
             year=when_tt.tm_year,
@@ -41,5 +108,61 @@ def api_new_game(request, game_id):
             day=when_tt.tm_mday,
             hour=when_tt.tm_hour)
     lobby = int(lobby)
-    TenhouGame(game_id=game_id, when_played=when, lobby=lobby).save()
+    with open(fname, 'rb') as f:
+        gdata = TenhouDecoder.Game()
+        gdata.decode(f)
+    game = TenhouGame(game_id=game_id, when_played=when, lobby=lobby)
+    full_stats = game.lobby == 1303 and len(gdata.players) == 4
+    owari = gdata.owari.split(',')
+    data = []
+    urlparams = []
+    for i, xmlplayer in enumerate(gdata.players):
+        num = owari[i * 2 + 1]
+        if num[0] != '-':
+            num = "+" + num
+        username = xmlplayer.name
+        urlparams.append(('n{}'.format(i), username))
+        if full_stats:
+            try:
+                dbplayer = TenhouPlayer.objects.get(tenhou_name=username)
+            except TenhouPlayer.DoesNotExist:
+                dbplayer = TenhouPlayer(tenhou_name=username, ndays=1)
+        else:
+            dbplayer = None
+        data.append((username, num, float(num), i, dbplayer))
+
+    data_byplacement = data[:]
+    data_byplacement.sort(key=lambda x: x[2], reverse=True)
+    game.scores = " ".join(("{}({})".format(name, score) for name, score, _, _, _ in data_byplacement))
+    game.url_names = urlencode(urlparams)
+    game.save()
+
+    if full_stats:
+        for r in gdata.rounds:
+            for agari in r.agari:
+                if hasattr(agari, 'limit'):
+                    dbplayer = data[agari.player][4]
+                    setattr(dbplayer, 'n' + agari.limit,
+                            getattr(dbplayer, 'n' + agari.limit) + 1)
+
+        data_byplacement[0][4].nplace1 += 1
+        data_byplacement[1][4].nplace2 += 1
+        data_byplacement[2][4].nplace3 += 1
+        data_byplacement[3][4].nplace4 += 1
+
+        for _, _, _, _, dbplayer in data:
+            if dbplayer.rank_time is None or game.when_played > dbplayer.rank_time:
+                dbplayer.rank_time = game.when_played
+                dbplayer.rank = xmlplayer.rank
+                dbplayer.rate = xmlplayer.rate
+            dbplayer.ngames += 1
+            if dbplayer.id:
+                if not dbplayer.games.filter(
+                        when_played__gte=when.replace(hour=0),
+                        when_played__lt=when.replace(hour=) + datetime.timedelta(days=1),
+                        ).exists():
+                    dbplayer.ndays += 1
+            dbplayer.save()
+            game.players.add(dbplayer)
+
     return HttpResponse('OK')

@@ -14,11 +14,65 @@ body {
 
 {% block content %}
 <div id="content-main">
+    <h1>Players</h1>
+    <table>
+        <tr>
+            <th rowspan="2">Name</th>
+            <th rowspan="2" colspan="2">Lobby 0</th>
+            <th class="startsection" rowspan="2">Days</th>
+            <th rowspan="2">Games</th>
+            <th class="startsection" colspan="2">Placements</th>
+            <th class="startsection" colspan="2">Cake Points</th>
+            <th class="startsection" rowspan="2">Limits</th>
+            <th colspan="2">Tea Points</th>
+            <th class="startsection" colspan="2">Snack Points</th>
+        </tr>
+        <tr>
+            <th class="startsection">1st/2nd/3rd/4th</th>
+            <th>Avg</th>
+            <th class="startsection">Sum</th>
+            <th>Avg</th>
+            <th>Sum</th>
+            <th>Avg</th>
+            <th class="startsection">Sum</th>
+            <th>Avg</th>
+        </tr>
+        {% for player in players %}
+        <tr>
+            <td>{{ player.tenhou_name }}</td>
+            <td>{{ player.rank }}</td>
+            <td>R{{ player.rate }}</td>
+            <td class="startsection">{{ player.ndays }}</td>
+            <td>{{ player.ngames }}</td>
+            <td class="startsection">{{ player.placements }}</td>
+            <td>{{ player.place_avg|floatformat:1 }}</td>
+            <td class="startsection">{{ player.cp }}</td>
+            <td>{{ player.cp_avg|floatformat:1 }}</td>
+            <td class="startsection">{{ player.limits }}</td>
+            <td>{{ player.tp }}</td>
+            <td>{{ player.tp_avg|floatformat:1 }}</td>
+            <td class="startsection">{{ player.sp }}</td>
+            <td>{{ player.sp_avg|floatformat:1 }}</td>
+        </tr>
+        {% endfor %}
+    </table>
     {% for day, games in games_by_day %}
     <h1>{{ day }}</h1>
     {% for game in games %}
     <h2>{{ game.scores }}</h2>
     <p>View on tenhou.net: <a href="http://tenhou.net/0/?log={{ game.game_id }}">Flash</a> <a href="http://tenhou.net/5/?log={{ game.game_id }}&{{ game.url_names }}">HTML+JS</a></p>
+    <ul>
+        {% for round, extra in game.rounds %}
+        <li>{{ round }}</li>
+        {% if extra %}
+        <ul>
+            {% for each_agari in extra %}
+            <li>{{ each_agari }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endfor %}
+    </ul>
     {% endfor %}
     {% endfor %}
 </div>
