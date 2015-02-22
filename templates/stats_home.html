@@ -14,8 +14,12 @@ body {
 
 {% block content %}
 <div id="content-main">
-    <ul>
-        {{ games_by_day|unordered_list }}
-    </ul>
+    {% for day, games in games_by_day %}
+    <h1>{{ day }}</h1>
+    {% for game in games %}
+    <h2>{{ game.scores }}</h2>
+    <p>View on tenhou.net: <a href="http://tenhou.net/0/?log={{ game.game_id }}">Flash</a> <a href="http://tenhou.net/5/?log={{ game.game_id }}&{{ game.url_names }}">HTML+JS</a></p>
+    {% endfor %}
+    {% endfor %}
 </div>
 {% endblock %}
