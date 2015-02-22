@@ -3,13 +3,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 from .secrets import SECRET_KEY
 
-DEBUG = False
-TEMPLATE_DEBUG = DEBUG
 ROOT_URLCONF = 'mjapp.urls'
 TIME_ZONE = 'UTC'
 USE_I18N = False
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+TENHOU_LOG_DIR = os.path.join(BASE_DIR, 'tenhou-game-xml')
 
 ALLOWED_HOSTS = (
     'mahjong.maxb.eu',

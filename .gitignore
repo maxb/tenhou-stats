@@ -1,4 +1,6 @@
 /db.sqlite3
-/static
 /mjapp/secrets.py
+/static
+/tenhou-game-xml
+/tenhou_log/
 __pycache__/
