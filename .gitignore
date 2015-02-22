@@ -1,0 +1,4 @@
+/db.sqlite3
+/static
+/mjapp/secrets.py
+__pycache__/
