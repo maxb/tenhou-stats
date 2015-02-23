@@ -3,7 +3,8 @@ from django.contrib import admin
 
 urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^stats/$', 'stats.views.stats_home', name='index'),
+    url(r'^stats/$', 'stats.views.index', name='index'),
+    url(r'^stats/(.*)$', 'stats.views.stats_home'),
     url(r'^$', 'mjapp.views.home'),
     url(r'^api/new_game/(.*)', 'stats.views.api_new_game'),
 )

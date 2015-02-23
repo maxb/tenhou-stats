@@ -1,7 +1,8 @@
 from django.db import models
 
 class TenhouPlayer(models.Model):
-    tenhou_name = models.CharField(max_length=255, unique=True)
+    epoch = models.CharField(max_length=255)
+    tenhou_name = models.CharField(max_length=255)
     primary_id = models.ForeignKey('TenhouPlayer', null=True)
     rank = models.CharField(max_length=255)
     rate = models.IntegerField()
@@ -18,6 +19,9 @@ class TenhouPlayer(models.Model):
     nbaiman = models.IntegerField(default=0)
     nsanbaiman = models.IntegerField(default=0)
     nyakuman = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('epoch', 'tenhou_name')
 
     def __str__(self):
         return self.tenhou_name
@@ -61,6 +65,7 @@ class TenhouPlayer(models.Model):
 
 class TenhouGame(models.Model):
     game_id = models.CharField(max_length=255, unique=True)
+    epoch = models.CharField(max_length=255)
     when_played = models.DateTimeField()
     lobby = models.IntegerField()
     players = models.ManyToManyField(TenhouPlayer)

@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 import datetime
 import os
@@ -11,6 +11,11 @@ from urllib.parse import urlencode
 from .models import TenhouGame, TenhouPlayer
 
 import TenhouDecoder
+
+from django.shortcuts import redirect
+
+def index(request):
+    return redirect('/stats/lmc-season-2')
 
 def format_round(r):
     base_round, honba, riibo = r.round
@@ -49,12 +54,12 @@ def format_agari(agari, game):
     a += ")"
     return a
 
-def stats_home(request):
-    players = TenhouPlayer.objects.all().order_by('tenhou_name')
+def stats_home(request, epoch):
+    players = TenhouPlayer.objects.filter(epoch=epoch).order_by('tenhou_name')
     games_by_day = []
     current_day = None
     games_current_day = None
-    for game in TenhouGame.objects.filter(lobby=1303).order_by('-when_played', '-id'):
+    for game in TenhouGame.objects.filter(epoch=epoch).order_by('-when_played', '-id'):
         wp = game.when_played
         this_game_day = datetime.date(wp.year, wp.month, wp.day)
         if current_day != this_game_day:
@@ -116,6 +121,10 @@ def process_game(game_id, m, fname, game=None):
         gdata.decode(f)
 
     full_stats = lobby == 1303 and len(gdata.players) == 4
+    if full_stats:
+        epoch = 'lmc-season-1' if when.year < 2015 else 'lmc-season-2'
+    else:
+        epoch = 'adhoc'
     owari = gdata.owari.split(',')
     data = []
     urlparams = []
@@ -127,9 +136,9 @@ def process_game(game_id, m, fname, game=None):
         urlparams.append(('n{}'.format(i), username))
         if full_stats:
             try:
-                dbplayer = TenhouPlayer.objects.get(tenhou_name=username)
+                dbplayer = TenhouPlayer.objects.get(epoch=epoch, tenhou_name=username)
             except TenhouPlayer.DoesNotExist:
-                dbplayer = TenhouPlayer(tenhou_name=username, ndays=1)
+                dbplayer = TenhouPlayer(epoch=epoch, tenhou_name=username, ndays=1)
             if dbplayer.rank_time is None or game.when_played > dbplayer.rank_time:
                 dbplayer.rank_time = game.when_played
                 dbplayer.rank = xmlplayer.rank
@@ -144,6 +153,7 @@ def process_game(game_id, m, fname, game=None):
         game = TenhouGame(game_id=game_id)
     else:
         assert game_id == game.game_id
+    game.epoch = epoch
     game.when_played = when
     game.lobby = lobby
     game.scores = " ".join(("{}({})".format(name, score) for name, score, _, _, _ in data_byplacement))
