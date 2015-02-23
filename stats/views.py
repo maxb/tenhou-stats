@@ -125,7 +125,7 @@ def process_game(game_id, m, fname, game=None):
         gdata.decode(f)
 
     full_stats = lobby == 1303 and len(gdata.players) == 4
-    if full_stats:
+    if lobby == 1303:
         epoch = 'lmc-season-1' if when.year < 2015 else 'lmc-season-2'
     else:
         epoch = 'adhoc'
