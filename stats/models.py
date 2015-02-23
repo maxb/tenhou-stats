@@ -1,5 +1,9 @@
 from django.db import models
 
+class Epoch(models.Model):
+    epoch = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
+
 class TenhouPlayer(models.Model):
     epoch = models.CharField(max_length=255)
     tenhou_name = models.CharField(max_length=255)

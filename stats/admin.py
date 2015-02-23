@@ -1,6 +1,10 @@
 from django.contrib import admin
 
-from .models import TenhouGame, TenhouPlayer
+from .models import TenhouGame, TenhouPlayer, Epoch
+
+@admin.register(Epoch)
+class EpochModelAdmin(admin.ModelAdmin):
+    list_display = ('epoch', 'name',)
 
 @admin.register(TenhouGame)
 class TenhouGameModelAdmin(admin.ModelAdmin):

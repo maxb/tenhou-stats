@@ -1,6 +1,6 @@
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest
-from django.shortcuts import render, redirect
+from django.http import HttpResponse, HttpResponseBadRequest, Http404
+from django.shortcuts import render
 
 import datetime
 import os
@@ -8,14 +8,9 @@ import re
 import time
 from urllib.parse import urlencode
 
-from .models import TenhouGame, TenhouPlayer
+from .models import TenhouGame, TenhouPlayer, Epoch
 
 import TenhouDecoder
-
-from django.shortcuts import redirect
-
-def index(request):
-    return redirect('/stats/lmc-season-2')
 
 def format_round(r):
     base_round, honba, riibo = r.round
@@ -54,7 +49,15 @@ def format_agari(agari, game):
     a += ")"
     return a
 
+def stats_index(request):
+    epochs = Epoch.objects.all().order_by('epoch')
+    return render(request, 'stats_index.html', locals())
+
 def stats_home(request, epoch):
+    try:
+        epoch_obj = Epoch.objects.get(epoch=epoch)
+    except Epoch.DoesNotExist:
+        raise Http404()
     players = TenhouPlayer.objects.filter(epoch=epoch).order_by('tenhou_name')
     games_by_day = []
     current_day = None
@@ -89,6 +92,7 @@ def stats_home(request, epoch):
                 extra = [format_agari(x, gdata) for x in r.agari]
             game.rounds.append((round_string, extra))
     games_by_day.append([current_day, games_current_day])
+    title = epoch_obj.name
     return render(request, 'stats_home.html', locals())
 
 GAME_ID_RE = re.compile(r'(20[0-9]{8})gm-([0-9a-f]{4})-([0-9]{4,5})-[0-9a-f]{8}')
