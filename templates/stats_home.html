@@ -47,12 +47,12 @@ body {
             <td class="startsection">{{ player.placements }}</td>
             <td>{{ player.place_avg|floatformat:2 }}</td>
             <td class="startsection">{{ player.cp }}</td>
-            <td>{{ player.cp_avg|floatformat:1 }}</td>
+            <td>{{ player.cp_avg|floatformat:2 }}</td>
             <td class="startsection">{{ player.limits }}</td>
             <td>{{ player.tp }}</td>
-            <td>{{ player.tp_avg|floatformat:1 }}</td>
+            <td>{{ player.tp_avg|floatformat:2 }}</td>
             <td class="startsection">{{ player.sp }}</td>
-            <td>{{ player.sp_avg|floatformat:1 }}</td>
+            <td>{{ player.sp_avg|floatformat:2 }}</td>
         </tr>
         {% endfor %}
     </table>
