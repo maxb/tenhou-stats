@@ -6,6 +6,7 @@ import datetime
 import os
 import re
 import time
+from urllib.parse import urlencode
 
 from .models import TenhouGame, TenhouPlayer
 
@@ -89,18 +90,19 @@ def api_new_game(request, game_id):
     m = GAME_ID_RE.match(game_id)
     if not m:
         return HttpResponseBadRequest('Incorrectly formatted ID')
-
-    datehour, typeflags, lobby = m.groups()
     fname = "{}/{}.xml".format(settings.TENHOU_LOG_DIR, game_id)
     if not os.path.exists(fname):
         return HttpResponseBadRequest('File does not exist')
-
     try:
-        TenhouGame.objects.get(game_id = game_id)
+        TenhouGame.objects.get(game_id=game_id)
         return HttpResponse('OK (already known)')
     except TenhouGame.DoesNotExist:
         pass
+    process_game(game_id, m, fname)
+    return HttpResponse('OK')
 
+def process_game(game_id, m, fname, game=None):
+    datehour, typeflags, lobby = m.groups()
     when_tt = time.strptime(datehour, '%Y%m%d%H')
     when = datetime.datetime(
             year=when_tt.tm_year,
@@ -111,8 +113,8 @@ def api_new_game(request, game_id):
     with open(fname, 'rb') as f:
         gdata = TenhouDecoder.Game()
         gdata.decode(f)
-    game = TenhouGame(game_id=game_id, when_played=when, lobby=lobby)
-    full_stats = game.lobby == 1303 and len(gdata.players) == 4
+
+    full_stats = lobby == 1303 and len(gdata.players) == 4
     owari = gdata.owari.split(',')
     data = []
     urlparams = []
@@ -130,9 +132,15 @@ def api_new_game(request, game_id):
         else:
             dbplayer = None
         data.append((username, num, float(num), i, dbplayer))
-
     data_byplacement = data[:]
     data_byplacement.sort(key=lambda x: x[2], reverse=True)
+
+    if game is None:
+        game = TenhouGame(game_id=game_id)
+    else:
+        assert game_id == game.game_id
+    game.when_played = when
+    game.lobby = lobby
     game.scores = " ".join(("{}({})".format(name, score) for name, score, _, _, _ in data_byplacement))
     game.url_names = urlencode(urlparams)
     game.save()
@@ -157,12 +165,10 @@ def api_new_game(request, game_id):
                 dbplayer.rate = xmlplayer.rate
             dbplayer.ngames += 1
             if dbplayer.id:
-                if not dbplayer.games.filter(
+                if not dbplayer.tenhougame_set.filter(
                         when_played__gte=when.replace(hour=0),
-                        when_played__lt=when.replace(hour=) + datetime.timedelta(days=1),
+                        when_played__lt=when.replace(hour=0) + datetime.timedelta(days=1),
                         ).exists():
                     dbplayer.ndays += 1
             dbplayer.save()
             game.players.add(dbplayer)
-
-    return HttpResponse('OK')
