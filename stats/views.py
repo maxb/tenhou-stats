@@ -67,6 +67,7 @@ def stats_home(request):
         gdata = TenhouDecoder.Game()
         with open(fname, 'rb') as f:
             gdata.decode(f)
+        game.nplayers = len(gdata.players)
         game.rounds = []
         for r in gdata.rounds:
             round_string = format_round(r)

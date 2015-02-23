@@ -59,6 +59,7 @@ body {
     {% for day, games in games_by_day %}
     <h1>{{ day }}</h1>
     {% for game in games %}
+    <div class="game{{ game.nplayers }}p">
     <h2>{{ game.scores }}</h2>
     <p>View on tenhou.net: <a href="http://tenhou.net/0/?log={{ game.game_id }}">Flash</a> <a href="http://tenhou.net/5/?log={{ game.game_id }}&{{ game.url_names }}">HTML+JS</a></p>
     <ul>
@@ -73,6 +74,7 @@ body {
         {% endif %}
         {% endfor %}
     </ul>
+    </div>
     {% endfor %}
     {% endfor %}
 </div>

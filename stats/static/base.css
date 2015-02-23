@@ -1,17 +1,15 @@
-/*
-    DJANGO Admin styles
-*/
-
 body {
     margin: 0;
     padding: 0;
-    font-size: 12px;
+    font-size: 12pt;
     font-family: "Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
     color: #333;
     background: #fff;
 }
 
-/* LINKS */
+div.game3p {
+    color: #700;
+}
 
 a:link, a:visited {
     color: #5b80b2;
@@ -26,92 +24,34 @@ a img {
     border: none;
 }
 
-a.section:link, a.section:visited {
-    color: #fff;
-    text-decoration: none;
-}
-
-/* GLOBAL DEFAULTS */
-
-p, ol, ul, dl {
-    margin: .2em 0 .8em 0;
-}
-
 p {
+    margin: 0;
     padding: 0;
     line-height: 140%;
 }
 
 h1,h2,h3,h4,h5 {
     font-weight: bold;
+    margin: .5em 0 .5em 0;
 }
 
 h1 {
-    font-size: 18px;
-    color: #666;
-    padding: 0 6px 0 0;
+    font-size: 20pt;
+    color: #004;
 }
 
 h2 {
-    font-size: 16px;
-    margin: 1em 0 .5em 0;
+    font-size: 16pt;
 }
 
-h2.subhead {
-    font-weight: normal;
+ul {
     margin-top: 0;
-}
-
-h3 {
-    font-size: 14px;
-    margin: .8em 0 .3em 0;
-    color: #666;
-    font-weight: bold;
-}
-
-h4 {
-    font-size: 12px;
-    margin: 1em 0 .8em 0;
-    padding-bottom: 3px;
-}
-
-h5 {
-    font-size: 10px;
-    margin: 1.5em 0 .5em 0;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-ul li {
-    list-style-type: square;
-    padding: 1px 0;
-}
-
-ul.plainlist {
-    margin-left: 0 !important;
-}
-
-ul.plainlist li {
-    list-style-type: none;
-}
-
-li ul {
     margin-bottom: 0;
 }
 
-li, dt, dd {
-    font-size: 11px;
-    line-height: 14px;
-}
-
-dt {
-    font-weight: bold;
-    margin-top: 4px;
-}
-
-dd {
-    margin-left: 0;
+li {
+    margin: 0;
+    padding: 0;
 }
 
 form {
@@ -239,173 +179,28 @@ p img, h1 img, h2 img, h3 img, h4 img, td img {
 
 table {
     border-collapse: collapse;
-    border-color: #ccc;
+    border-color: #222;
 }
 
 td, th {
-    font-size: 11px;
-    line-height: 13px;
-    border-bottom: 1px solid #eee;
-    vertical-align: top;
-    padding: 5px;
-    font-family: "Lucida Grande", Verdana, Arial, sans-serif;
+    font-size: 12pt;
+    text-align: center;
+    vertical-align: middle;
+    padding: 1px 4px;
+    white-space: nowrap;
+}
+
+td.startsection, th.startsection {
+    border-left: 1px solid #222;
+}
+
+td {
+    border-top: 1px solid #222;
 }
 
 th {
-    text-align: left;
-    font-size: 12px;
     font-weight: bold;
-}
-
-thead th,
-tfoot td {
-    color: #666;
-    padding: 2px 5px;
-    font-size: 11px;
-    background: #e1e1e1 url(../img/nav-bg.gif) top left repeat-x;
-    border-left: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
-}
-
-tfoot td {
-    border-bottom: none;
-    border-top: 1px solid #ddd;
-}
-
-thead th:first-child,
-tfoot td:first-child {
-    border-left: none !important;
-}
-
-thead th.optional {
-    font-weight: normal !important;
-}
-
-fieldset table {
-    border-right: 1px solid #eee;
-}
-
-tr.row-label td {
-    font-size: 9px;
-    padding-top: 2px;
-    padding-bottom: 0;
-    border-bottom: none;
-    color: #666;
-    margin-top: -1px;
-}
-
-tr.alt {
-    background: #f6f6f6;
-}
-
-.row1 {
-    background: #EDF3FE;
-}
-
-.row2 {
-    background: #fff;
-}
-
-/* SORTABLE TABLES */
-
-thead th {
-    padding: 2px 5px;
-    line-height: normal;
-}
-
-thead th a:link, thead th a:visited {
-    color: #666;
-}
-
-thead th.sorted {
-    background: #c5c5c5 url(../img/nav-bg-selected.gif) top left repeat-x;
-}
-
-thead th.sorted .text {
-    padding-right: 42px;
-}
-
-table thead th .text span {
-    padding: 2px 5px;
-    display:block;
-}
-
-table thead th .text a {
-    display: block;
-    cursor: pointer;
-    padding: 2px 5px;
-}
-
-table thead th.sortable:hover {
-    background: #fff url(../img/nav-bg-reverse.gif) 0 -5px repeat-x;
-}
-
-thead th.sorted a.sortremove {
-    visibility: hidden;
-}
-
-table thead th.sorted:hover a.sortremove {
-    visibility: visible;
-}
-
-table thead th.sorted .sortoptions {
-    display: block;
-    padding: 4px 5px 0 5px;
-    float: right;
-    text-align: right;
-}
-
-table thead th.sorted .sortpriority {
-    font-size: .8em;
-    min-width: 12px;
-    text-align: center;
-    vertical-align: top;
-}
-
-table thead th.sorted .sortoptions a {
-    width: 14px;
-    height: 12px;
-    display: inline-block;
-}
-
-table thead th.sorted .sortoptions a.sortremove {
-    background: url(../img/sorting-icons.gif) -4px -5px no-repeat;
-}
-
-table thead th.sorted .sortoptions a.sortremove:hover {
-    background: url(../img/sorting-icons.gif) -4px -27px no-repeat;
-}
-
-table thead th.sorted .sortoptions a.ascending {
-    background: url(../img/sorting-icons.gif) -5px -50px no-repeat;
-}
-
-table thead th.sorted .sortoptions a.ascending:hover {
-    background: url(../img/sorting-icons.gif) -5px -72px no-repeat;
-}
-
-table thead th.sorted .sortoptions a.descending {
-    background: url(../img/sorting-icons.gif) -5px -94px no-repeat;
-}
-
-table thead th.sorted .sortoptions a.descending:hover {
-    background: url(../img/sorting-icons.gif) -5px -115px no-repeat;
-}
-
-/* ORDERABLE TABLES */
-
-table.orderable tbody tr td:hover {
-    cursor: move;
-}
-
-table.orderable tbody tr td:first-child {
-    padding-left: 14px;
-    background-image: url(../img/nav-bg-grabber.gif);
-    background-repeat: repeat-y;
-}
-
-table.orderable-initalized .order-cell, body>tr>td.order-cell {
-    display: none;
+    border-bottom: 1px solid #222;
 }
 
 /* FORM DEFAULTS */
@@ -414,7 +209,6 @@ input, textarea, select, .form-row p {
     margin: 2px 0;
     padding: 2px 3px;
     vertical-align: middle;
-    font-family: "Lucida Grande", Verdana, Arial, sans-serif;
     font-weight: normal;
     font-size: 11px;
 }
@@ -431,7 +225,7 @@ textarea, select, .vTextField {
 /* FORM BUTTONS */
 
 .button, input[type=submit], input[type=button], .submit-row input {
-    background: #fff url(../img/nav-bg.gif) bottom repeat-x;
+    background: #fff url(admin/img/nav-bg.gif) bottom repeat-x;
     padding: 3px 5px;
     color: black;
     border: 1px solid #bbb;
@@ -439,31 +233,31 @@ textarea, select, .vTextField {
 }
 
 .button:active, input[type=submit]:active, input[type=button]:active {
-    background-image: url(../img/nav-bg-reverse.gif);
+    background-image: url(admin/img/nav-bg-reverse.gif);
     background-position: top;
 }
 
 .button[disabled], input[type=submit][disabled], input[type=button][disabled] {
-    background-image: url(../img/nav-bg.gif);
+    background-image: url(admin/img/nav-bg.gif);
     background-position: bottom;
     opacity: 0.4;
 }
 
 .button.default, input[type=submit].default, .submit-row input.default {
     border: 2px solid #5b80b2;
-    background: #7CA0C7 url(../img/default-bg.gif) bottom repeat-x;
+    background: #7CA0C7 url(admin/img/default-bg.gif) bottom repeat-x;
     font-weight: bold;
     color: #fff;
     float: right;
 }
 
 .button.default:active, input[type=submit].default:active {
-    background-image: url(../img/default-bg-reverse.gif);
+    background-image: url(admin/img/default-bg-reverse.gif);
     background-position: top;
 }
 
 .button[disabled].default, input[type=submit][disabled].default, input[type=button][disabled].default {
-    background-image: url(../img/default-bg.gif);
+    background-image: url(admin/img/default-bg.gif);
     background-position: bottom;
     opacity: 0.4;
 }
@@ -500,7 +294,7 @@ textarea, select, .vTextField {
     font-size: 11px;
     text-align: left;
     font-weight: bold;
-    background: #7CA0C7 url(../img/default-bg.gif) top left repeat-x;
+    background: #7CA0C7 url(admin/img/default-bg.gif) top left repeat-x;
     color: #fff;
 }
 
@@ -523,15 +317,15 @@ ul.messagelist li {
     margin: 0 0 3px 0;
     border-bottom: 1px solid #ddd;
     color: #666;
-    background: #dfd url(../img/icon_success.gif) 5px .3em no-repeat;
+    background: #dfd url(admin/img/icon_success.gif) 5px .3em no-repeat;
 }
 
 ul.messagelist li.warning {
-    background: #ffc url(../img/icon_alert.gif) 5px .3em no-repeat;
+    background: #ffc url(admin/img/icon_alert.gif) 5px .3em no-repeat;
 }
 
 ul.messagelist li.error {
-    background: #ffefef url(../img/icon_error.gif) 5px .3em no-repeat;
+    background: #ffefef url(admin/img/icon_error.gif) 5px .3em no-repeat;
 }
 
 .errornote {
@@ -542,7 +336,7 @@ ul.messagelist li.error {
     margin: 0 0 3px 0;
     border: 1px solid #c22;
     color: #c11;
-    background: #ffefef url(../img/icon_error.gif) 5px .38em no-repeat;
+    background: #ffefef url(admin/img/icon_error.gif) 5px .38em no-repeat;
 }
 
 .errornote, ul.errorlist {
@@ -605,7 +399,7 @@ div.system-message p.system-message-title {
     padding: 4px 5px 4px 25px;
     margin: 0;
     color: #c11;
-    background: #ffefef url(../img/icon_error.gif) 5px .3em no-repeat;
+    background: #ffefef url(admin/img/icon_error.gif) 5px .3em no-repeat;
 }
 
 .description {
@@ -616,7 +410,7 @@ div.system-message p.system-message-title {
 /* BREADCRUMBS */
 
 div.breadcrumbs {
-    background: #fff url(../img/nav-bg-reverse.gif) 0 -10px repeat-x;
+    background: #fff url(admin/img/nav-bg-reverse.gif) 0 -10px repeat-x;
     padding: 2px 8px 3px 8px;
     font-size: 11px;
     color: #999;
@@ -629,17 +423,17 @@ div.breadcrumbs {
 
 .addlink {
     padding-left: 12px;
-    background: url(../img/icon_addlink.gif) 0 .2em no-repeat;
+    background: url(admin/img/icon_addlink.gif) 0 .2em no-repeat;
 }
 
 .changelink {
     padding-left: 12px;
-    background: url(../img/icon_changelink.gif) 0 .2em no-repeat;
+    background: url(admin/img/icon_changelink.gif) 0 .2em no-repeat;
 }
 
 .deletelink {
     padding-left: 12px;
-    background: url(../img/icon_deletelink.gif) 0 .25em no-repeat;
+    background: url(admin/img/icon_deletelink.gif) 0 .25em no-repeat;
 }
 
 a.deletelink:link, a.deletelink:visited {
@@ -648,60 +442,6 @@ a.deletelink:link, a.deletelink:visited {
 
 a.deletelink:hover {
     color: #993333;
-}
-
-/* OBJECT TOOLS */
-
-.object-tools {
-    font-size: 10px;
-    font-weight: bold;
-    font-family: Arial,Helvetica,sans-serif;
-    padding-left: 0;
-    float: right;
-    position: relative;
-    margin-top: -2.4em;
-    margin-bottom: -2em;
-}
-
-.form-row .object-tools {
-    margin-top: 5px;
-    margin-bottom: 5px;
-    float: none;
-    height: 2em;
-    padding-left: 3.5em;
-}
-
-.object-tools li {
-    display: block;
-    float: left;
-    margin-left: 5px;
-    height: 16px;
-}
-
-.object-tools a {
-    border-radius: 15px;
-}
-
-.object-tools a:link, .object-tools a:visited {
-    display: block;
-    float: left;
-    color: #fff;
-    padding: .2em 10px;
-    background: #999;
-}
-
-.object-tools a:hover, .object-tools li:hover a {
-    background-color: #5b80b2;
-}
-
-.object-tools a.viewsitelink, .object-tools a.golink {
-    background: #999 url(../img/tooltag-arrowright.png) 95% center no-repeat;
-    padding-right: 26px;
-}
-
-.object-tools a.addlink {
-    background: #999 url(../img/tooltag-add.png) 95% center no-repeat;
-    padding-right: 26px;
 }
 
 /* OBJECT HISTORY */
@@ -841,6 +581,6 @@ table#change-history tbody th {
 }
 
 #content-related .module h2 {
-    background: #eee url(../img/nav-bg.gif) bottom left repeat-x;
+    background: #eee url(admin/img/nav-bg.gif) bottom left repeat-x;
     color: #666;
 }
