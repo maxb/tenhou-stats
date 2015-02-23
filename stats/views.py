@@ -130,6 +130,10 @@ def process_game(game_id, m, fname, game=None):
                 dbplayer = TenhouPlayer.objects.get(tenhou_name=username)
             except TenhouPlayer.DoesNotExist:
                 dbplayer = TenhouPlayer(tenhou_name=username, ndays=1)
+            if dbplayer.rank_time is None or game.when_played > dbplayer.rank_time:
+                dbplayer.rank_time = game.when_played
+                dbplayer.rank = xmlplayer.rank
+                dbplayer.rate = xmlplayer.rate
         else:
             dbplayer = None
         data.append((username, num, float(num), i, dbplayer))
@@ -160,10 +164,6 @@ def process_game(game_id, m, fname, game=None):
         data_byplacement[3][4].nplace4 += 1
 
         for _, _, _, _, dbplayer in data:
-            if dbplayer.rank_time is None or game.when_played > dbplayer.rank_time:
-                dbplayer.rank_time = game.when_played
-                dbplayer.rank = xmlplayer.rank
-                dbplayer.rate = xmlplayer.rate
             dbplayer.ngames += 1
             if dbplayer.id:
                 if not dbplayer.tenhougame_set.filter(
