@@ -54,7 +54,7 @@ def stats_home(request):
     games_by_day = []
     current_day = None
     games_current_day = None
-    for game in TenhouGame.objects.filter(lobby=1303).order_by('-when_played'):
+    for game in TenhouGame.objects.filter(lobby=1303).order_by('-when_played', '-id'):
         wp = game.when_played
         this_game_day = datetime.date(wp.year, wp.month, wp.day)
         if current_day != this_game_day:
