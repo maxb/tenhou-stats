@@ -45,7 +45,7 @@ body {
             <td class="startsection">{{ player.ndays }}</td>
             <td>{{ player.ngames }}</td>
             <td class="startsection">{{ player.placements }}</td>
-            <td>{{ player.place_avg|floatformat:1 }}</td>
+            <td>{{ player.place_avg|floatformat:2 }}</td>
             <td class="startsection">{{ player.cp }}</td>
             <td>{{ player.cp_avg|floatformat:1 }}</td>
             <td class="startsection">{{ player.limits }}</td>
@@ -56,6 +56,23 @@ body {
         </tr>
         {% endfor %}
     </table>
+    <h2>The whimsical points of the Light Mahjong Club</h2>
+    <p>Cake points - for placements:</p>
+    <ul>
+        <li>1st ⇒ 4</li>
+        <li>2nd ⇒ 3</li>
+        <li>3rd ⇒ 2</li>
+        <li>4th ⇒ 1</li>
+    </ul>
+    <p>Tea points - for limit hands:</p>
+    <ul>
+        <li>Yakuman ⇒ 10</li>
+        <li>Sanbaiman ⇒ 8</li>
+        <li>Baiman ⇒ 5</li>
+        <li>Haneman ⇒ 4</li>
+        <li>Mangan ⇒ 3</li>
+    </ul>
+    <p>Snack points: the total of tea and cake</p>
     {% for day, games in games_by_day %}
     <h1>{{ day }}</h1>
     {% for game in games %}
