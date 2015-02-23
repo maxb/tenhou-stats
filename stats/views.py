@@ -143,8 +143,8 @@ def process_game(game_id, m, fname, game=None):
                 dbplayer = TenhouPlayer.objects.get(epoch=epoch, tenhou_name=username)
             except TenhouPlayer.DoesNotExist:
                 dbplayer = TenhouPlayer(epoch=epoch, tenhou_name=username, ndays=1)
-            if dbplayer.rank_time is None or game.when_played > dbplayer.rank_time:
-                dbplayer.rank_time = game.when_played
+            if dbplayer.rank_time is None or when > dbplayer.rank_time:
+                dbplayer.rank_time = when
                 dbplayer.rank = xmlplayer.rank
                 dbplayer.rate = xmlplayer.rate
         else:
