@@ -58,6 +58,7 @@ def stats_home(request, epoch):
         epoch_obj = Epoch.objects.get(epoch=epoch)
     except Epoch.DoesNotExist:
         raise Http404()
+    is_lmc = epoch_obj.epoch.startswith('lmc-')
     players = TenhouPlayer.objects.filter(epoch=epoch).order_by('tenhou_name')
     games_by_day = []
     current_day = None
@@ -96,7 +97,7 @@ def stats_home(request, epoch):
     return render(request, 'stats_home.html', locals())
 
 GAME_ID_RE = re.compile(r'(20[0-9]{8})gm-([0-9a-f]{4})-([0-9]{4,5})-[0-9a-f]{8}')
-def api_new_game(request, game_id):
+def api_new_game(request, game_id, epoch=None):
     m = GAME_ID_RE.match(game_id)
     if not m:
         return HttpResponseBadRequest('Incorrectly formatted ID')
@@ -108,10 +109,10 @@ def api_new_game(request, game_id):
         return HttpResponse('OK (already known)')
     except TenhouGame.DoesNotExist:
         pass
-    process_game(game_id, m, fname)
+    process_game(game_id, m, fname, epoch)
     return HttpResponse('OK')
 
-def process_game(game_id, m, fname, game=None):
+def process_game(game_id, m, fname, epoch, game=None):
     datehour, typeflags, lobby = m.groups()
     when_tt = time.strptime(datehour, '%Y%m%d%H')
     when = datetime.datetime(
@@ -125,10 +126,11 @@ def process_game(game_id, m, fname, game=None):
         gdata.decode(f)
 
     full_stats = lobby == 1303 and len(gdata.players) == 4
-    if lobby == 1303:
-        epoch = 'lmc-season-1' if when.year < 2015 else 'lmc-season-2'
-    else:
-        epoch = 'adhoc'
+    if epoch is None:
+        if lobby == 1303:
+            epoch = 'lmc-season-1' if when.year < 2015 else 'lmc-season-2'
+        else:
+            epoch = 'adhoc'
     owari = gdata.owari.split(',')
     data = []
     urlparams = []

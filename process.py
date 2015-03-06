@@ -22,4 +22,4 @@ for game in TenhouGame.objects.all():
     m = GAME_ID_RE.match(game_id)
     fname = "{}/{}.xml".format(settings.TENHOU_LOG_DIR, game.game_id)
 
-    process_game(game_id, m, fname, game)
+    process_game(game_id, m, fname, game.epoch, game)
