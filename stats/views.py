@@ -104,13 +104,26 @@ def api_new_game(request, game_id, epoch=None):
     fname = "{}/{}.xml".format(settings.TENHOU_LOG_DIR, game_id)
     if not os.path.exists(fname):
         return HttpResponseBadRequest('File does not exist')
+    if epoch is None:
+        epoch_obj = None
+    else:
+        try:
+            epoch_obj = Epoch.objects.get(epoch=epoch)
+        except Epoch.DoesNotExist:
+            epoch_obj = None
+    if epoch_obj:
+        trailer = ' - browse at http://mahjong.maxb.eu/stats/{}'.format(epoch_obj.epoch)
+    else:
+        trailer = ''
     try:
-        TenhouGame.objects.get(game_id=game_id)
-        return HttpResponse('OK (already known)')
+        game = TenhouGame.objects.get(game_id=game_id)
+        if epoch and epoch != game.epoch and game.epoch == 'adhoc':
+            process_game(game_id, m, fname, epoch, game)
+        return HttpResponse('OK (already known)' + trailer)
     except TenhouGame.DoesNotExist:
         pass
     process_game(game_id, m, fname, epoch)
-    return HttpResponse('OK')
+    return HttpResponse('OK' + trailer)
 
 def process_game(game_id, m, fname, epoch, game=None):
     datehour, typeflags, lobby = m.groups()
@@ -125,12 +138,12 @@ def process_game(game_id, m, fname, epoch, game=None):
         gdata = TenhouDecoder.Game()
         gdata.decode(f)
 
-    full_stats = lobby == 1303 and len(gdata.players) == 4
     if epoch is None:
         if lobby == 1303:
             epoch = 'lmc-season-1' if when.year < 2015 else 'lmc-season-2'
         else:
             epoch = 'adhoc'
+    full_stats = epoch != 'adhoc' and len(gdata.players) == 4
     owari = gdata.owari.split(',')
     data = []
     urlparams = []

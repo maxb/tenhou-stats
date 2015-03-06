@@ -28,7 +28,7 @@ class TenhouPlayer(models.Model):
         unique_together = ('epoch', 'tenhou_name')
 
     def __str__(self):
-        return self.tenhou_name
+        return "{}/{}".format(self.epoch, self.tenhou_name)
 
     def placements(self):
         return "{} / {} / {} / {}".format(self.nplace1, self.nplace2, self.nplace3, self.nplace4)
@@ -72,7 +72,7 @@ class TenhouGame(models.Model):
     epoch = models.CharField(max_length=255)
     when_played = models.DateTimeField()
     lobby = models.IntegerField()
-    players = models.ManyToManyField(TenhouPlayer)
+    players = models.ManyToManyField(TenhouPlayer, blank=True)
     scores = models.CharField(max_length=255, blank=True)
     url_names = models.CharField(max_length=255, blank=True)
 
