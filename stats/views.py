@@ -53,6 +53,50 @@ def stats_index(request):
     epochs = Epoch.objects.all().order_by('epoch')
     return render(request, 'stats_index.html', locals())
 
+def stats_game(request, game):
+    try:
+        try:
+            game = int(game)
+            game = TenhouGame.objects.get(id=game)
+        except ValueError:
+            game = TenhouGame.objects.get(game_id=game)
+    except TenhouGame.DoesNotExist:
+        raise Http404()
+    games = [game]
+    decorate_for_template(game)
+    title = game.game_id
+    return render(request, 'stats_game.html', locals())
+
+def markdown_escaper(x):
+    return x.replace('^', r'\^')
+
+def decorate_for_template(game, markdown_escape=False):
+    fname = "{}/{}.xml".format(settings.TENHOU_LOG_DIR, game.game_id)
+    gdata = TenhouDecoder.Game()
+    with open(fname, 'rb') as f:
+        gdata.decode(f)
+    game.nplayers = len(gdata.players)
+    game.rounds = []
+    for r in gdata.rounds:
+        round_string = format_round(r)
+        if len(r.agari) == 1:
+            extra = None
+            round_string += ": " + format_agari(r.agari[0], gdata)
+        elif len(r.agari) == 0:
+            extra = None
+            if r.ryuukyoku:
+                round_string += ": 流局"
+            else:
+                round_string += ": SOME KIND OF ABORTIVE DRAW?"
+        else:
+            extra = [format_agari(x, gdata) for x in r.agari]
+        if markdown_escape:
+            game.rounds.append((markdown_escaper(round_string), [markdown_escaper(x) for x in extra] if extra else extra))
+        else:
+            game.rounds.append((round_string, extra))
+    if markdown_escape:
+        game.scores = markdown_escaper(game.scores)
+
 def stats_home(request, epoch):
     try:
         epoch_obj = Epoch.objects.get(epoch=epoch)
@@ -72,38 +116,43 @@ def stats_home(request, epoch):
             games_current_day = []
             current_day = this_game_day
         games_current_day.append(game)
-        fname = "{}/{}.xml".format(settings.TENHOU_LOG_DIR, game.game_id)
-        gdata = TenhouDecoder.Game()
-        with open(fname, 'rb') as f:
-            gdata.decode(f)
-        game.nplayers = len(gdata.players)
-        game.rounds = []
-        for r in gdata.rounds:
-            round_string = format_round(r)
-            if len(r.agari) == 1:
-                extra = None
-                round_string += ": " + format_agari(r.agari[0], gdata)
-            elif len(r.agari) == 0:
-                extra = None
-                if r.ryuukyoku:
-                    round_string += ": 流局"
-                else:
-                    round_string += ": SOME KIND OF ABORTIVE DRAW?"
-            else:
-                extra = [format_agari(x, gdata) for x in r.agari]
-            game.rounds.append((round_string, extra))
+        decorate_for_template(game)
     games_by_day.append([current_day, games_current_day])
     title = epoch_obj.name
     return render(request, 'stats_home.html', locals())
 
+def stats_markdown(request, epoch):
+    try:
+        epoch_obj = Epoch.objects.get(epoch=epoch)
+    except Epoch.DoesNotExist:
+        raise Http404()
+    games_by_day = []
+    current_day = None
+    games_current_day = None
+    for game in TenhouGame.objects.filter(epoch=epoch).order_by('-when_played', '-id'):
+        wp = game.when_played
+        this_game_day = datetime.date(wp.year, wp.month, wp.day)
+        if current_day != this_game_day:
+            if current_day is not None:
+                games_by_day.append([current_day, games_current_day])
+            games_current_day = []
+            current_day = this_game_day
+        games_current_day.append(game)
+        decorate_for_template(game, markdown_escape=True)
+    games_by_day.append([current_day, games_current_day])
+    return render(request, 'stats_markdown.txt', locals(), content_type='text/plain; charset=UTF-8')
+
+BASE_URL = 'http://mahjong.maxb.eu/'
 GAME_ID_RE = re.compile(r'(20[0-9]{8})gm-([0-9a-f]{4})-([0-9]{4,5})-[0-9a-f]{8}')
 def api_new_game(request, game_id, epoch=None):
     m = GAME_ID_RE.match(game_id)
     if not m:
         return HttpResponseBadRequest('Incorrectly formatted ID')
+
     fname = "{}/{}.xml".format(settings.TENHOU_LOG_DIR, game_id)
     if not os.path.exists(fname):
         return HttpResponseBadRequest('File does not exist')
+
     if epoch is None:
         epoch_obj = None
     else:
@@ -111,19 +160,23 @@ def api_new_game(request, game_id, epoch=None):
             epoch_obj = Epoch.objects.get(epoch=epoch)
         except Epoch.DoesNotExist:
             epoch_obj = None
-    if epoch_obj:
-        trailer = ' - browse at http://mahjong.maxb.eu/stats/{}'.format(epoch_obj.epoch)
-    else:
-        trailer = ''
+
     try:
         game = TenhouGame.objects.get(game_id=game_id)
         if epoch and epoch != game.epoch and game.epoch == 'adhoc':
             process_game(game_id, m, fname, epoch, game)
-        return HttpResponse('OK (already known)' + trailer)
+        already = True
     except TenhouGame.DoesNotExist:
-        pass
-    process_game(game_id, m, fname, epoch)
-    return HttpResponse('OK' + trailer)
+        game = process_game(game_id, m, fname, epoch)
+        already = False
+
+    message = "View game at {}game/{}".format(BASE_URL, game.id)
+    if game.epoch != 'adhoc':
+        message += ' - stats at {}stats/{}'.format(BASE_URL, game.epoch)
+    if already:
+        message += ' [this game was already in the database]'
+
+    return HttpResponse(message)
 
 def process_game(game_id, m, fname, epoch, game=None):
     datehour, typeflags, lobby = m.groups()
@@ -202,3 +255,5 @@ def process_game(game_id, m, fname, epoch, game=None):
                     dbplayer.ndays += 1
             dbplayer.save()
             game.players.add(dbplayer)
+
+    return game

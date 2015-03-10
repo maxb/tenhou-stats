@@ -3,6 +3,11 @@
 <head>
 <title>{% block title %}LMC Tenhou Stats{% endblock %}</title>
 <link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "base.css" %}{% endblock %}" />
+<style type="text/css">
+body {
+    background: #eee;
+}
+</style>
 {% block extrastyle %}{% endblock %}
 <script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{% static "admin/" %}{% endfilter %}";</script>
 <script type="text/javascript">window.__admin_utc_offset__ = "{% filter escapejs %}{% now "Z" %}{% endfilter %}";</script>
@@ -12,7 +17,7 @@
 <div id="container">
     <div id="header">
         <div id="branding">
-        {% block branding %}{% endblock %}
+            <h1 id="site-name">LMC Tenhou Stats</h1>
         </div>
         {% if user.is_active and user.is_staff %}
         <div id="user-tools">

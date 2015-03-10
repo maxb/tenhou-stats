@@ -1,0 +1,15 @@
+{% autoescape off %}{% for day, games in games_by_day %}
+# {{ day }}
+{% for game in games %}
+## {{ game.scores }}
+
+View on tenhou.net (Flash): http://tenhou.net/0/?log={{ game.game_id }}  
+View on tenhou.net (HTML+JS): http://tenhou.net/5/?log={{ game.game_id }}&{{ game.url_names }}
+
+{% for round, extra in game.rounds %}* {{ round }}
+{% if extra %}{% for each_agari in extra %}    * {{ each_agari }}
+{% endfor %}{% endif %}{% endfor %}
+*****
+{% endfor %}
+{% endfor %}
+{% endautoescape %}

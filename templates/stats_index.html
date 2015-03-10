@@ -1,17 +1,5 @@
 {% extends "base.html" %}
 
-{% block extrastyle %}{{ block.super }}<style type="text/css">
-body {
-    background: #eee;
-}
-</style>{% endblock %}
-
-{% block title %}LMC Tenhou Stats{% endblock %}
-
-{% block branding %}
-<h1 id="site-name">LMC Tenhou Stats</h1>
-{% endblock %}
-
 {% block content %}
 <div id="content-main">
     {% for epoch in epochs %}
