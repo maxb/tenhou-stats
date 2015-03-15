@@ -19,6 +19,15 @@ def format_round(r):
         round_string += " {}本場".format(honba)
     return round_string
 
+RYUUKYOKU_NAMES = {
+    "yao9":   'kyuushu kyuuhai',
+    "reach4": 'suucha riichi',
+    "ron3":   'sanchahou',
+    "kan4":   'suu kaikan',
+    "kaze4":  'suufon renta',
+    "nm":     'nagashi mangan',
+}
+
 AGARI_TYPE = {
     'RON': 'ロン',
     'TSUMO': 'ツモ',
@@ -84,10 +93,9 @@ def decorate_for_template(game, markdown_escape=False):
             round_string += ": " + format_agari(r.agari[0], gdata)
         elif len(r.agari) == 0:
             extra = None
-            if r.ryuukyoku:
-                round_string += ": 流局"
-            else:
-                round_string += ": SOME KIND OF ABORTIVE DRAW?"
+            round_string += ": 流局"
+            if r.ryuukyoku is not True:
+                round_string += " {}".format(RYUUKYOKU_NAMES[r.ryuukyoku])
         else:
             extra = [format_agari(x, gdata) for x in r.agari]
         if markdown_escape:
@@ -103,7 +111,11 @@ def stats_home(request, epoch):
     except Epoch.DoesNotExist:
         raise Http404()
     is_lmc = epoch_obj.epoch.startswith('lmc-')
-    players = TenhouPlayer.objects.filter(epoch=epoch).order_by('tenhou_name')
+    is_waml = epoch_obj.epoch.startswith('waml-')
+    if is_waml:
+        players = TenhouPlayer.objects.filter(epoch=epoch).order_by('waml_group', 'tenhou_name')
+    else:
+        players = TenhouPlayer.objects.filter(epoch=epoch).order_by('tenhou_name')
     games_by_day = []
     current_day = None
     games_current_day = None
