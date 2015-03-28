@@ -11,6 +11,7 @@ from urllib.parse import urlencode
 from .models import TenhouGame, TenhouPlayer, Epoch
 
 import TenhouDecoder
+import tenhou_fetch
 
 def format_round(r):
     base_round, honba, riibo = r.round
@@ -155,15 +156,15 @@ def stats_markdown(request, epoch):
     return render(request, 'stats_markdown.txt', locals(), content_type='text/plain; charset=UTF-8')
 
 BASE_URL = 'http://mahjong.maxb.eu/'
-GAME_ID_RE = re.compile(r'(20[0-9]{8})gm-([0-9a-f]{4})-([0-9]{4,5})-[0-9a-f]{8}')
 def api_new_game(request, game_id, epoch=None):
-    m = GAME_ID_RE.match(game_id)
-    if not m:
+    if not tenhou_fetch.GAME_ID_RE.match(game_id):
         return HttpResponseBadRequest('Incorrectly formatted ID')
+
+    game_id = tenhou_fetch.tenhouHash(game_id)
 
     fname = "{}/{}.xml".format(settings.TENHOU_LOG_DIR, game_id)
     if not os.path.exists(fname):
-        return HttpResponseBadRequest('File does not exist')
+        tenhou_fetch.download_game(game_id, fname)
 
     if epoch is None:
         epoch_obj = None
@@ -176,10 +177,10 @@ def api_new_game(request, game_id, epoch=None):
     try:
         game = TenhouGame.objects.get(game_id=game_id)
         if epoch and epoch != game.epoch and game.epoch == 'adhoc':
-            process_game(game_id, m, fname, epoch, game)
+            process_game(game_id, fname, epoch, game)
         already = True
     except TenhouGame.DoesNotExist:
-        game = process_game(game_id, m, fname, epoch)
+        game = process_game(game_id, fname, epoch)
         already = False
 
     message = "View game at {}game/{}".format(BASE_URL, game.id)
@@ -190,7 +191,9 @@ def api_new_game(request, game_id, epoch=None):
 
     return HttpResponse(message)
 
-def process_game(game_id, m, fname, epoch, game=None):
+GAME_ID_PARTS_RE = re.compile(r'(20[0-9]{8})gm-([0-9a-f]{4})-([0-9]{4,5})-[0-9a-f]{8}')
+def process_game(game_id, fname, epoch, game=None):
+    m = GAME_ID_PARTS_RE.match(game_id)
     datehour, typeflags, lobby = m.groups()
     when_tt = time.strptime(datehour, '%Y%m%d%H')
     when = datetime.datetime(
