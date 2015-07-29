@@ -97,6 +97,9 @@ def decorate_for_template(game, markdown_escape=False):
             round_string += ": 流局"
             if r.ryuukyoku is not True:
                 round_string += " {}".format(RYUUKYOKU_NAMES[r.ryuukyoku])
+            if r.ryuukyoku_tenpai is not None:
+                tenpai_players = [gdata.players[x].name for x in r.ryuukyoku_tenpai]
+                round_string += " (tenpai: {})".format(", ".join(tenpai_players))
         else:
             extra = [format_agari(x, gdata) for x in r.agari]
         if markdown_escape:
