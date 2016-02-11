@@ -38,3 +38,7 @@ def download_game(game_id, target_fname):
     data = resp.read()
     with open(target_fname, 'wb') as f:
         f.write(data)
+
+if __name__ == '__main__':
+    import sys
+    download_game(sys.argv[1], '/tmp/' + sys.argv[1])
