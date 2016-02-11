@@ -116,10 +116,7 @@ def stats_home(request, epoch):
         raise Http404()
     is_lmc = epoch_obj.epoch.startswith('lmc-')
     is_waml = epoch_obj.epoch.startswith('waml-')
-    if is_waml:
-        players = TenhouPlayer.objects.filter(epoch=epoch).order_by('waml_group', 'tenhou_name')
-    else:
-        players = TenhouPlayer.objects.filter(epoch=epoch).order_by('tenhou_name')
+    players = TenhouPlayer.objects.filter(epoch=epoch).order_by('tenhou_name')
     games_by_day = []
     current_day = None
     games_current_day = None

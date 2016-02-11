@@ -12,8 +12,6 @@ class TenhouPlayer(models.Model):
     rate = models.IntegerField()
     rank_time = models.DateTimeField()
 
-    waml_group = models.CharField(max_length=1, blank=True)
-
     ngames = models.IntegerField(default=0)
     ndays = models.IntegerField(default=0)
     nplace1 = models.IntegerField(default=0)

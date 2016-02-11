@@ -67,29 +67,6 @@
     <table>
         <tr>
             <th rowspan="2">Name</th>
-            <th class="startsection" rowspan="2">Group</th>
-            <th class="startsection" rowspan="2">Games</th>
-            <th class="startsection" colspan="2">Placements</th>
-        </tr>
-        <tr>
-            <th class="startsection">1st/2nd/3rd/4th</th>
-            <th>Avg</th>
-        </tr>
-        {% for player in players %}
-        <tr>
-            <td>{{ player.tenhou_name }}</td>
-            <td class="startsection">{{ player.waml_group }}</td>
-            <td class="startsection">{{ player.ngames }}</td>
-            <td class="startsection">{{ player.placements }}</td>
-            <td>{{ player.place_avg|floatformat:2 }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <h1>Players</h1>
-    <table>
-        <tr>
-            <th rowspan="2">Name</th>
             <th class="startsection" rowspan="2">Games</th>
             <th class="startsection" colspan="2">Placements</th>
         </tr>
