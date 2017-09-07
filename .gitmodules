@@ -1,0 +1,3 @@
+[submodule "tenhou-log"]
+	path = tenhou-log
+	url = https://github.com/maxb/tenhou-log

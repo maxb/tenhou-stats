@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest, Http404
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 import datetime
 import os
@@ -10,8 +10,11 @@ from urllib.parse import urlencode
 
 from .models import TenhouGame, Epoch
 
-import TenhouDecoder
-import tenhou_fetch
+from . import TenhouDecoder
+from . import tenhou_fetch
+
+def home(request):
+    return redirect('/stats/')
 
 def format_round(r):
     base_round, honba, riibo = r.round
