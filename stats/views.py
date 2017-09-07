@@ -8,7 +8,7 @@ import re
 import time
 from urllib.parse import urlencode
 
-from .models import TenhouGame, TenhouPlayer, Epoch
+from .models import TenhouGame, Epoch
 
 import TenhouDecoder
 import tenhou_fetch
@@ -139,9 +139,6 @@ def stats_home(request, epoch):
         epoch_obj = Epoch.objects.get(epoch=epoch)
     except Epoch.DoesNotExist:
         raise Http404()
-    is_lmc = epoch_obj.epoch.startswith('lmc-')
-    is_waml = epoch_obj.epoch.startswith('waml-')
-    players = TenhouPlayer.objects.filter(epoch=epoch).order_by('tenhou_name')
     games_by_day = []
     current_day = None
     games_current_day = None
@@ -232,11 +229,7 @@ def process_game(game_id, fname, epoch, game=None):
         gdata.decode(f)
 
     if epoch is None:
-        if lobby == 1303:
-            epoch = 'lmc-season-1' if when.year < 2015 else 'lmc-season-2'
-        else:
-            epoch = 'adhoc'
-    full_stats = epoch != 'adhoc' and len(gdata.players) == 4
+        epoch = 'adhoc'
     owari = gdata.owari.split(',')
     data = []
     urlparams = []
@@ -246,18 +239,7 @@ def process_game(game_id, fname, epoch, game=None):
             num = "+" + num
         username = xmlplayer.name
         urlparams.append(('n{}'.format(i), username))
-        if full_stats:
-            try:
-                dbplayer = TenhouPlayer.objects.get(epoch=epoch, tenhou_name=username)
-            except TenhouPlayer.DoesNotExist:
-                dbplayer = TenhouPlayer(epoch=epoch, tenhou_name=username, ndays=1)
-            if dbplayer.rank_time is None or when > dbplayer.rank_time:
-                dbplayer.rank_time = when
-                dbplayer.rank = xmlplayer.rank
-                dbplayer.rate = xmlplayer.rate
-        else:
-            dbplayer = None
-        data.append((username, num, float(num), i, dbplayer))
+        data.append((username, num, float(num), i))
     data_byplacement = data[:]
     data_byplacement.sort(key=lambda x: x[2], reverse=True)
 
@@ -268,33 +250,8 @@ def process_game(game_id, fname, epoch, game=None):
     game.epoch = epoch
     game.when_played = when
     game.lobby = lobby
-    game.scores = " ".join(("{}({})".format(name, score) for name, score, _, _, _ in data_byplacement))
-    game.seat_scores = " ".join(("{}({})".format(seat[i], score) for name, score, _, i, _ in data_byplacement))
+    game.scores = " ".join(("{}({})".format(name, score) for name, score, _, _ in data_byplacement))
     game.url_names = urlencode(urlparams)
     game.save()
-
-    if full_stats:
-        for r in gdata.rounds:
-            for agari in r.agari:
-                if hasattr(agari, 'limit'):
-                    dbplayer = data[agari.player][4]
-                    setattr(dbplayer, 'n' + agari.limit,
-                            getattr(dbplayer, 'n' + agari.limit) + 1)
-
-        data_byplacement[0][4].nplace1 += 1
-        data_byplacement[1][4].nplace2 += 1
-        data_byplacement[2][4].nplace3 += 1
-        data_byplacement[3][4].nplace4 += 1
-
-        for _, _, _, _, dbplayer in data:
-            dbplayer.ngames += 1
-            if dbplayer.id:
-                if not dbplayer.tenhougame_set.filter(
-                        when_played__gte=when.replace(hour=0),
-                        when_played__lt=when.replace(hour=0) + datetime.timedelta(days=1),
-                        ).exists():
-                    dbplayer.ndays += 1
-            dbplayer.save()
-            game.players.add(dbplayer)
 
     return game

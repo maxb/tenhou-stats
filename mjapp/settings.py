@@ -8,7 +8,7 @@ TIME_ZONE = 'UTC'
 USE_I18N = False
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-TENHOU_LOG_DIR = os.path.join(BASE_DIR, 'tenhou-game-xml')
+TENHOU_LOG_DIR = os.path.join(BASE_DIR, '..', 'tenhou-game-xml')
 
 ADMINS = (
     ('Max Bowsher', '_@maxb.eu'),

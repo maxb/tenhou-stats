@@ -1,7 +1,7 @@
 {% load admin_static %}<!DOCTYPE html>
 <html>
 <head>
-<title>{% block title %}LMC Tenhou Stats{% endblock %}</title>
+<title>{% block title %}Tenhou Stats{% endblock %}</title>
 <link rel="stylesheet" type="text/css" href="{% block stylesheet %}{% static "base.css" %}{% endblock %}" />
 <style type="text/css">
 body {
@@ -17,7 +17,7 @@ body {
 <div id="container">
     <div id="header">
         <div id="branding">
-            <h1 id="site-name">LMC Tenhou Stats</h1>
+            <h1 id="site-name">Tenhou Stats</h1>
         </div>
         {% if user.is_active and user.is_staff %}
         <div id="user-tools">

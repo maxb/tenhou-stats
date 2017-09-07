@@ -11,7 +11,7 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "mjapp.settings"
 django.setup()
 
 from django.conf import settings
-from stats.models import TenhouGame, TenhouPlayer
+from stats.models import TenhouGame
 from stats.views import decorate_for_template
 
 for game in TenhouGame.objects.all():
