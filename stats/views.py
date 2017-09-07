@@ -33,11 +33,18 @@ AGARI_TYPE = {
     'RON': 'ロン',
     'TSUMO': 'ツモ',
 }
-def format_agari(agari, game):
+seat = '東南西北'
+def format_agari(agari, game, byseat=False):
     a_type = AGARI_TYPE[agari.type]
-    a = "{} {}".format(game.players[agari.player].name, a_type)
+    if byseat:
+        a = "{} {}".format(seat[agari.player], a_type)
+    else:
+        a = "{} {}".format(game.players[agari.player].name, a_type)
     if agari.type == 'RON':
-        a += " {}".format(game.players[agari.fromPlayer].name)
+        if byseat:
+            a += " {}".format(seat[agari.fromPlayer])
+        else:
+            a += " {}".format(game.players[agari.fromPlayer].name)
     a += " {}点".format(agari.points)
     if hasattr(agari, 'limit'):
         a += " {}".format(agari.limit.upper())
@@ -80,7 +87,7 @@ def stats_game(request, game):
 def markdown_escaper(x):
     return x.replace('^', r'\^')
 
-def decorate_for_template(game, markdown_escape=False):
+def decorate_for_template(game, markdown_escape=False, byseat=False):
     fname = "{}/{}.xml".format(settings.TENHOU_LOG_DIR, game.game_id)
     gdata = TenhouDecoder.Game()
     with open(fname, 'rb') as f:
@@ -91,14 +98,17 @@ def decorate_for_template(game, markdown_escape=False):
         round_string = format_round(r)
         if len(r.agari) == 1:
             extra = None
-            round_string += ": " + format_agari(r.agari[0], gdata)
+            round_string += ": " + format_agari(r.agari[0], gdata, byseat=byseat)
         elif len(r.agari) == 0:
             extra = None
             round_string += ": 流局"
             if r.ryuukyoku is not True:
                 round_string += " {}".format(RYUUKYOKU_NAMES[r.ryuukyoku])
             if r.ryuukyoku_tenpai is not None:
-                tenpai_players = [gdata.players[x].name for x in r.ryuukyoku_tenpai]
+                if byseat:
+                    tenpai_players = [seat[x] for x in r.ryuukyoku_tenpai]
+                else:
+                    tenpai_players = [gdata.players[x].name for x in r.ryuukyoku_tenpai]
                 round_string += " (tenpai: {})".format(", ".join(tenpai_players))
         else:
             extra = [format_agari(x, gdata) for x in r.agari]
@@ -106,10 +116,25 @@ def decorate_for_template(game, markdown_escape=False):
             game.rounds.append((markdown_escaper(round_string), [markdown_escaper(x) for x in extra] if extra else extra))
         else:
             game.rounds.append((round_string, extra))
+    if byseat:
+        owari = gdata.owari.split(',')
+        data = []
+        for i, xmlplayer in enumerate(gdata.players):
+            num = owari[i * 2 + 1]
+            if num[0] != '-':
+                num = "+" + num
+            data.append((num, float(num), i))
+        data.sort(key=lambda x: x[1], reverse=True)
+        game.scores = " ".join(("{}({})".format(seat[i], score) for score, _, i in data))
     if markdown_escape:
         game.scores = markdown_escaper(game.scores)
 
 def stats_home(request, epoch):
+    if epoch.endswith("BYSEAT"):
+        byseat = True
+        epoch = epoch[:-6]
+    else:
+        byseat = False
     try:
         epoch_obj = Epoch.objects.get(epoch=epoch)
     except Epoch.DoesNotExist:
@@ -129,7 +154,7 @@ def stats_home(request, epoch):
             games_current_day = []
             current_day = this_game_day
         games_current_day.append(game)
-        decorate_for_template(game)
+        decorate_for_template(game, byseat=byseat)
     games_by_day.append([current_day, games_current_day])
     title = epoch_obj.name
     return render(request, 'stats_home.html', locals())
@@ -244,6 +269,7 @@ def process_game(game_id, fname, epoch, game=None):
     game.when_played = when
     game.lobby = lobby
     game.scores = " ".join(("{}({})".format(name, score) for name, score, _, _, _ in data_byplacement))
+    game.seat_scores = " ".join(("{}({})".format(seat[i], score) for name, score, _, i, _ in data_byplacement))
     game.url_names = urlencode(urlparams)
     game.save()
 
